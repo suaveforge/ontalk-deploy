@@ -115,6 +115,11 @@ var statusLabels = {
     available: '상담 가능', on_call: '통화 중', away: '자리 비움', offline: '오프라인'
 };
 var roleLabels = { customer: '고객', counselor: '상담사', admin: '관리자' };
+var CLIENT_TEST_ACCOUNTS = {
+    admin: { username: 'client_admin', password: 'ontalk2026' },
+    customer: { username: 'client_member', password: 'ontalk2026' },
+    counselor: { username: 'client_counselor', password: 'ontalk2026' }
+};
 var auth = { authenticated: false, role: null, user: null, member: null };
 var snapshot = null;
 var eventSource = null;
@@ -243,6 +248,15 @@ if (!window.PointerEvent) {
     $('#loginTab').addEventListener('touchend', function (event) { event.preventDefault(); switchAuthTab('login'); });
     $('#signupTab').addEventListener('touchend', function (event) { event.preventDefault(); switchAuthTab('signup'); });
 }
+$('#clientTestAccount').addEventListener('change', function (event) {
+    var account = CLIENT_TEST_ACCOUNTS[event.currentTarget.value];
+    if (!account)
+        return;
+    var form = $('#loginForm');
+    form.elements.username.value = account.username;
+    form.elements.password.value = account.password;
+    $('#loginError').textContent = '';
+});
 $('#loginForm').addEventListener('submit', function (event) { return __awaiter(_this, void 0, void 0, function () {
     var form, button, result, error_1;
     return __generator(this, function (_a) {
@@ -410,13 +424,15 @@ function enterApp() {
 }
 function setAdminPage(page) {
     var portal = $('#adminPortalView');
+    var viewer = $('#adminViewerView');
     var operations = $('#adminView');
-    if (!portal || !operations)
+    if (!portal || !viewer || !operations)
         return;
     portal.classList.toggle('hidden', page !== 'home');
+    viewer.classList.toggle('hidden', page !== 'viewer');
     operations.classList.toggle('hidden', page !== 'operations');
     if (window.history && window.history.replaceState) {
-        var hash = page === 'operations' ? '#admin' : '#admin-home';
+        var hash = page === 'viewer' ? '#admin-viewer' : page === 'operations' ? '#admin-operations' : '#admin-home';
         window.history.replaceState(null, '', window.location.pathname + window.location.search + hash);
     }
 }
@@ -834,6 +850,7 @@ $('#acceptIntentButton').addEventListener('click', function () { acceptPendingIn
 $('#rejectIntentButton').addEventListener('click', function () { rejectPendingIntent(this.dataset.intentId); });
 function renderAdmin(data) {
     $('#adminUpdated').textContent = "\uC5C5\uB370\uC774\uD2B8 ".concat(formatDate(data.updatedAt));
+    $('#adminViewerUpdated').textContent = "\uC5C5\uB370\uC774\uD2B8 ".concat(formatDate(data.updatedAt));
     $('#metricMembers').textContent = String((data.members || []).filter(function (item) { return item.role === 'customer'; }).length);
     $('#metricCounselors').textContent = String((data.members || []).filter(function (item) { return item.role === 'counselor'; }).length);
     $('#metricActive').textContent = data.counts.active;
@@ -1129,7 +1146,11 @@ $('#counselorViewerTab').addEventListener('click', function () { adminViewerRole
 $$('[data-period]').forEach(function (button) { return button.addEventListener('click', function () { analyticsPeriod = Number(button.dataset.period) || 7; renderPeopleViewer(snapshot); }); });
 $('#peopleSearch').addEventListener('input', function () { return renderPeopleViewer(snapshot); });
 $('#marketRefresh').addEventListener('click', loadSnapshot);
+$('#openAdminViewer').addEventListener('click', function () { return setAdminPage('viewer'); });
 $('#openAdminOperations').addEventListener('click', function () { return setAdminPage('operations'); });
+$('#openAdminOperationsFromViewer').addEventListener('click', function () { return setAdminPage('operations'); });
+$('#openAdminViewerFromOperations').addEventListener('click', function () { return setAdminPage('viewer'); });
+$('#backAdminPortalViewer').addEventListener('click', function () { return setAdminPage('home'); });
 $('#backAdminPortal').addEventListener('click', function () { return setAdminPage('home'); });
 function openFreePbx() {
     var opened = window.open(FREEPBX_URL, '_blank', 'noopener,noreferrer');
@@ -1143,6 +1164,7 @@ $('#historyNext').addEventListener('click', function () { historyPage += 1; rend
 $('#eventPrev').addEventListener('click', function () { eventPage -= 1; renderEvents(adminEventRows); });
 $('#eventNext').addEventListener('click', function () { eventPage += 1; renderEvents(adminEventRows); });
 $('#adminRefresh').addEventListener('click', loadSnapshot);
+$('#adminViewerRefresh').addEventListener('click', loadSnapshot);
 function isIosDevice() {
     return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 }
@@ -1163,7 +1185,7 @@ function registerServiceWorker() {
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 4, , 5]);
-                    return [4 /*yield*/, navigator.serviceWorker.register('/service-worker.js?v=98', { scope: '/' })];
+                    return [4 /*yield*/, navigator.serviceWorker.register('/service-worker.js?v=101', { scope: '/' })];
                 case 2:
                     serviceWorkerRegistration = _a.sent();
                     return [4 /*yield*/, navigator.serviceWorker.ready];
@@ -2350,7 +2372,7 @@ function stopRinging() { if (ringTimer)
 function showIncomingNotification(name) {
     if (!('Notification' in window) || Notification.permission !== 'granted' || document.visibilityState === 'visible')
         return;
-    var options = { body: "".concat(name, "\uB2D8\uACFC \uC74C\uC131 \uD1B5\uD654\uB97C \uC5F0\uACB0\uD569\uB2C8\uB2E4."), tag: 'ggul-incoming-call', requireInteraction: true, renotify: true, icon: '/icon-192.png?v=98', badge: '/icon-192.png?v=98', vibrate: [450, 180, 450, 180, 800] };
+    var options = { body: "".concat(name, "\uB2D8\uACFC \uC74C\uC131 \uD1B5\uD654\uB97C \uC5F0\uACB0\uD569\uB2C8\uB2E4."), tag: 'ggul-incoming-call', requireInteraction: true, renotify: true, icon: '/icon-192.png?v=101', badge: '/icon-192.png?v=101', vibrate: [450, 180, 450, 180, 800] };
     if (serviceWorkerRegistration)
         serviceWorkerRegistration.showNotification('온톡 상담 요청', options).catch(function () { });
 }

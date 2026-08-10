@@ -76,8 +76,8 @@ self.addEventListener('push', function(event) {
     var url = '/?action=accept&intent=' + encodeURIComponent(intent.id);
     return self.registration.showNotification('온톡 상담 요청', {
       body: intent.customerUsername + '님이 상담을 요청했습니다.',
-      icon: '/icon-192.png?v=98',
-      badge: '/icon-192.png?v=98',
+      icon: '/icon-192.png?v=101',
+      badge: '/icon-192.png?v=101',
       tag: 'ggul-call-' + intent.id,
       renotify: true,
       requireInteraction: true,
