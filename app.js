@@ -423,26 +423,39 @@ function enterApp() {
     });
 }
 function setAdminPage(page) {
-    var portal = $('#adminPortalView');
     var viewer = $('#adminViewerView');
     var operations = $('#adminView');
-    if (!portal || !viewer || !operations)
+    if (!viewer || !operations)
         return;
-    portal.classList.toggle('hidden', page !== 'home');
-    viewer.classList.toggle('hidden', page !== 'viewer');
-    operations.classList.toggle('hidden', page !== 'operations');
+    var nextPage = page === 'counselor' || page === 'member' ? page : 'operations';
+    var viewerOpen = nextPage === 'counselor' || nextPage === 'member';
+    operations.classList.toggle('hidden', nextPage !== 'operations');
+    viewer.classList.toggle('hidden', !viewerOpen);
+    if (viewerOpen) {
+        var nextRole = nextPage === 'counselor' ? 'counselor' : 'customer';
+        if (adminViewerRole !== nextRole)
+            selectedPersonId = null;
+        adminViewerRole = nextRole;
+        $('#adminViewerEyebrow').textContent = nextPage === 'counselor' ? 'COUNSELOR VIEWER' : 'MEMBER VIEWER';
+        $('#adminViewerTitle').textContent = nextPage === 'counselor' ? '상담사 뷰어' : '회원 뷰어';
+        if (snapshot)
+            renderPeopleViewer(snapshot);
+    }
+    $$('[data-admin-page]').forEach(function (button) {
+        button.classList.toggle('active', button.dataset.adminPage === nextPage);
+    });
     if (window.history && window.history.replaceState) {
-        var hash = page === 'viewer' ? '#admin-viewer' : page === 'operations' ? '#admin-operations' : '#admin-home';
+        var hash = nextPage === 'counselor' ? '#admin-counselor' : nextPage === 'member' ? '#admin-member' : '#admin-operations';
         window.history.replaceState(null, '', window.location.pathname + window.location.search + hash);
     }
 }
 function showRole(role) {
     $$('.role-view').forEach(function (view) { return view.classList.add('hidden'); });
-    var view = role === 'admin' ? $('#adminPortalView') : $("#".concat(role, "View"));
+    var view = role === 'admin' ? $('#adminView') : $("#".concat(role, "View"));
     if (view)
         view.classList.remove('hidden');
     if (role === 'admin')
-        setAdminPage('home');
+        setAdminPage('operations');
     $$('#roleNav button').forEach(function (button) {
         var allowed = button.dataset.view === role;
         button.classList.toggle('hidden', !allowed);
@@ -962,8 +975,6 @@ function renderEvents(events) {
     renderPagination('event', eventPage, adminEventRows.length);
 }
 function syncViewerTabs() {
-    $('#memberViewerTab').classList.toggle('active', adminViewerRole === 'customer');
-    $('#counselorViewerTab').classList.toggle('active', adminViewerRole === 'counselor');
     $$('[data-period]').forEach(function (button) { return button.classList.toggle('active', Number(button.dataset.period) === analyticsPeriod); });
 }
 function viewerPeople(data) {
@@ -1141,23 +1152,15 @@ function $$Inside(root, selector) { return Array.prototype.slice.call(root.query
 function showChartTooltip(container, event, html) { hideChartTooltip(container); var rect = container.getBoundingClientRect(); var clientX = event.touches && event.touches[0] ? event.touches[0].clientX : event.clientX; var clientY = event.touches && event.touches[0] ? event.touches[0].clientY : event.clientY; var tip = document.createElement('div'); tip.className = 'chart-tooltip'; tip.innerHTML = html; tip.style.left = "".concat(Math.max(65, Math.min(rect.width - 65, clientX - rect.left)), "px"); tip.style.top = "".concat(Math.max(60, clientY - rect.top), "px"); container.appendChild(tip); }
 function hideChartTooltip(container) { var existing = container.querySelector('.chart-tooltip'); if (existing && existing.parentNode)
     existing.parentNode.removeChild(existing); }
-$('#memberViewerTab').addEventListener('click', function () { adminViewerRole = 'customer'; selectedPersonId = null; renderPeopleViewer(snapshot); });
-$('#counselorViewerTab').addEventListener('click', function () { adminViewerRole = 'counselor'; selectedPersonId = null; renderPeopleViewer(snapshot); });
 $$('[data-period]').forEach(function (button) { return button.addEventListener('click', function () { analyticsPeriod = Number(button.dataset.period) || 7; renderPeopleViewer(snapshot); }); });
 $('#peopleSearch').addEventListener('input', function () { return renderPeopleViewer(snapshot); });
+$$('[data-admin-page]').forEach(function (button) { return button.addEventListener('click', function () { return setAdminPage(button.dataset.adminPage); }); });
 $('#marketRefresh').addEventListener('click', loadSnapshot);
-$('#openAdminViewer').addEventListener('click', function () { return setAdminPage('viewer'); });
-$('#openAdminOperations').addEventListener('click', function () { return setAdminPage('operations'); });
-$('#openAdminOperationsFromViewer').addEventListener('click', function () { return setAdminPage('operations'); });
-$('#openAdminViewerFromOperations').addEventListener('click', function () { return setAdminPage('viewer'); });
-$('#backAdminPortalViewer').addEventListener('click', function () { return setAdminPage('home'); });
-$('#backAdminPortal').addEventListener('click', function () { return setAdminPage('home'); });
 function openFreePbx() {
     var opened = window.open(FREEPBX_URL, '_blank', 'noopener,noreferrer');
     if (!opened)
         toast('팝업이 차단됐습니다. 브라우저에서 새 창 열기를 허용해 주세요.');
 }
-$('#openFreePbx').addEventListener('click', openFreePbx);
 $('#openFreePbxOperations').addEventListener('click', openFreePbx);
 $('#historyPrev').addEventListener('click', function () { historyPage -= 1; renderHistory(adminHistoryRows); });
 $('#historyNext').addEventListener('click', function () { historyPage += 1; renderHistory(adminHistoryRows); });
@@ -1185,7 +1188,7 @@ function registerServiceWorker() {
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 4, , 5]);
-                    return [4 /*yield*/, navigator.serviceWorker.register('/service-worker.js?v=101', { scope: '/' })];
+                    return [4 /*yield*/, navigator.serviceWorker.register('/service-worker.js?v=102', { scope: '/' })];
                 case 2:
                     serviceWorkerRegistration = _a.sent();
                     return [4 /*yield*/, navigator.serviceWorker.ready];
@@ -2372,7 +2375,7 @@ function stopRinging() { if (ringTimer)
 function showIncomingNotification(name) {
     if (!('Notification' in window) || Notification.permission !== 'granted' || document.visibilityState === 'visible')
         return;
-    var options = { body: "".concat(name, "\uB2D8\uACFC \uC74C\uC131 \uD1B5\uD654\uB97C \uC5F0\uACB0\uD569\uB2C8\uB2E4."), tag: 'ggul-incoming-call', requireInteraction: true, renotify: true, icon: '/icon-192.png?v=101', badge: '/icon-192.png?v=101', vibrate: [450, 180, 450, 180, 800] };
+    var options = { body: "".concat(name, "\uB2D8\uACFC \uC74C\uC131 \uD1B5\uD654\uB97C \uC5F0\uACB0\uD569\uB2C8\uB2E4."), tag: 'ggul-incoming-call', requireInteraction: true, renotify: true, icon: '/icon-192.png?v=102', badge: '/icon-192.png?v=102', vibrate: [450, 180, 450, 180, 800] };
     if (serviceWorkerRegistration)
         serviceWorkerRegistration.showNotification('온톡 상담 요청', options).catch(function () { });
 }

@@ -9,16 +9,16 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="온톡">
-  <link rel="manifest" href="/manifest.webmanifest?v=101">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=101">
-  <link rel="icon" href="/icon.svg?v=101" type="image/svg+xml">
-  <link rel="stylesheet" href="/styles.css?v=101">
+  <link rel="manifest" href="/manifest.webmanifest?v=102">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=102">
+  <link rel="icon" href="/icon.svg?v=102" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css?v=102">
 </head>
 <body>
   <div id="authView" class="auth-shell">
     <header class="auth-header">
       <a class="wordmark" href="#" aria-label="온톡 홈"><span class="honey-dot">온</span><strong>온톡</strong></a>
-      <div class="auth-header-meta"><span>온라인 상담 연결 서비스</span><span class="build-version" aria-label="배포 버전">ONTALK v101</span></div>
+      <div class="auth-header-meta"><span>온라인 상담 연결 서비스</span><span class="build-version" aria-label="배포 버전">ONTALK v102</span></div>
     </header>
     <main class="auth-main">
       <section class="auth-copy">
@@ -75,7 +75,7 @@
         <button data-view="counselor" class="role-counselor">상담 대기실</button>
         <button data-view="admin" class="role-admin">운영 관제</button>
       </nav>
-      <div class="header-user"><span class="build-version" aria-label="배포 버전">ONTALK v101</span><span id="headerRole" class="role-pill">-</span><strong id="headerUser">-</strong><button id="logoutButton" class="ghost">로그아웃</button></div>
+      <div class="header-user"><span class="build-version" aria-label="배포 버전">ONTALK v102</span><span id="headerRole" class="role-pill">-</span><strong id="headerUser">-</strong><button id="logoutButton" class="ghost">로그아웃</button></div>
     </header>
 
     <main>
@@ -126,36 +126,15 @@
         </div>
       </section>
 
-      <section id="adminPortalView" class="role-view hidden admin-portal-wrap">
-        <div class="admin-portal-hero">
-          <div><p class="eyebrow">ADMIN CONTROL CENTER</p><h1>온톡 관리도구</h1><p>운영 업무와 PBX 시스템 설정을 한곳에서 선택합니다.</p></div>
-          <span class="admin-security-badge">최고관리자 전용</span>
-        </div>
-        <div class="admin-entry-grid admin-entry-grid-three">
-          <article class="admin-entry-card primary-entry">
-            <div class="admin-entry-icon">뷰</div>
-            <div><p class="eyebrow">MEMBER VIEWER</p><h2>회원·상담사 뷰어</h2><p>회원과 상담사별 활동 흐름, 상담 요청 결과와 시간대별 활동을 확인합니다.</p></div>
-            <button id="openAdminViewer" class="primary wide" type="button">뷰어로 이동</button>
-          </article>
-          <article class="admin-entry-card operations-entry">
-            <div class="admin-entry-icon">운</div>
-            <div><p class="eyebrow">ONTALK OPERATIONS</p><h2>운영 관제</h2><p>현재 통화, 상담사 상태, 서비스 상태, 통화 기록과 이벤트를 확인합니다.</p></div>
-            <button id="openAdminOperations" class="secondary wide" type="button">운영 관제로 이동</button>
-          </article>
-          <article class="admin-entry-card pbx-entry">
-            <div class="admin-entry-icon">PBX</div>
-            <div><p class="eyebrow">FREEPBX SYSTEM</p><h2>PBX 시스템관리</h2><p>내선, ARS, 통화 경로와 Asterisk 설정을 관리합니다.</p></div>
-            <button id="openFreePbx" class="secondary wide" type="button">FreePBX 열기 ↗</button>
-          </article>
-        </div>
-        <p class="admin-entry-note">FreePBX는 별도 시스템이므로 새 탭에서 열리고 다시 로그인이 필요합니다.</p>
-      </section>
-
       <section id="adminViewerView" class="role-view hidden admin-wrap">
-        <div class="admin-top"><div><button id="backAdminPortalViewer" class="admin-back" type="button">← 관리 홈</button><p class="eyebrow">MEMBER & COUNSELOR VIEWER</p><h1>회원·상담사 뷰어</h1></div><div class="admin-top-actions"><span id="adminViewerUpdated">-</span><button id="openAdminOperationsFromViewer" class="secondary" type="button">운영 관제 →</button><button id="adminViewerRefresh" class="secondary" type="button">새로고침</button></div></div>
+        <div class="admin-top"><div><p id="adminViewerEyebrow" class="eyebrow">MEMBER VIEWER</p><h1 id="adminViewerTitle">회원 뷰어</h1></div><div class="admin-top-actions"><span id="adminViewerUpdated">-</span><button id="adminViewerRefresh" class="secondary" type="button">새로고침</button></div></div>
+        <nav class="admin-section-nav" aria-label="관리자 화면">
+          <button type="button" data-admin-page="operations">운영</button>
+          <button type="button" data-admin-page="counselor">상담사뷰어</button>
+          <button type="button" data-admin-page="member">회원뷰어</button>
+        </nav>
         <article class="analytics-shell">
-          <div class="analytics-toolbar">
-            <div class="viewer-tabs" role="tablist"><button id="memberViewerTab" class="active" type="button">회원 뷰어</button><button id="counselorViewerTab" type="button">상담사 뷰어</button></div>
+          <div class="analytics-toolbar analytics-toolbar-period-only">
             <div class="period-tabs" aria-label="분석 기간"><button data-period="7" class="active">7일</button><button data-period="30">30일</button><button data-period="90">90일</button></div>
           </div>
           <div class="analytics-layout">
@@ -187,7 +166,12 @@
       </section>
 
       <section id="adminView" class="role-view hidden admin-wrap">
-        <div class="admin-top"><div><button id="backAdminPortal" class="admin-back" type="button">← 관리 홈</button><p class="eyebrow">REAL-TIME OPERATIONS</p><h1>온톡 운영 관제</h1></div><div class="admin-top-actions"><span id="adminUpdated">-</span><button id="openAdminViewerFromOperations" class="secondary" type="button">회원·상담사 뷰어 →</button><button id="openFreePbxOperations" class="secondary admin-pbx-button" type="button">FreePBX 열기 ↗</button><button id="adminRefresh" class="secondary" type="button">새로고침</button></div></div>
+        <div class="admin-top"><div><p class="eyebrow">REAL-TIME OPERATIONS</p><h1>온톡 운영 관제</h1></div><div class="admin-top-actions"><span id="adminUpdated">-</span><button id="openFreePbxOperations" class="secondary admin-pbx-button" type="button">FreePBX 열기 ↗</button><button id="adminRefresh" class="secondary" type="button">새로고침</button></div></div>
+        <nav class="admin-section-nav" aria-label="관리자 화면">
+          <button type="button" data-admin-page="operations" class="active">운영</button>
+          <button type="button" data-admin-page="counselor">상담사뷰어</button>
+          <button type="button" data-admin-page="member">회원뷰어</button>
+        </nav>
         <div id="systemBanner" class="system-banner"><span class="pulse"></span><strong>시스템 상태 확인 중</strong><span>AMI 데이터를 불러오고 있습니다.</span></div>
         <div class="metric-grid metric-grid-six">
           <article><span>전체 회원</span><strong id="metricMembers">0</strong><small>가입 계정</small></article>
@@ -248,7 +232,7 @@
   </div>
   <div id="toast" class="toast" role="status"></div>
   <script defer src="https://jssip.net/download/releases/jssip-3.10.0.min.js"></script>
-  <script defer src="/config.js?v=101"></script>
-  <script defer src="/app.js?v=101"></script>
+  <script defer src="/config.js?v=102"></script>
+  <script defer src="/app.js?v=102"></script>
 </body>
 </html>
