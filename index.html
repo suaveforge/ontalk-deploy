@@ -9,16 +9,16 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="온톡">
-  <link rel="manifest" href="/manifest.webmanifest?v=102">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=102">
-  <link rel="icon" href="/icon.svg?v=102" type="image/svg+xml">
-  <link rel="stylesheet" href="/styles.css?v=102">
+  <link rel="manifest" href="/manifest.webmanifest?v=104">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=104">
+  <link rel="icon" href="/icon.svg?v=104" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css?v=104">
 </head>
 <body>
   <div id="authView" class="auth-shell">
     <header class="auth-header">
       <a class="wordmark" href="#" aria-label="온톡 홈"><span class="honey-dot">온</span><strong>온톡</strong></a>
-      <div class="auth-header-meta"><span>온라인 상담 연결 서비스</span><span class="build-version" aria-label="배포 버전">ONTALK v102</span></div>
+      <div class="auth-header-meta"><span>온라인 상담 연결 서비스</span><span class="build-version" aria-label="배포 버전">ONTALK v104</span></div>
     </header>
     <main class="auth-main">
       <section class="auth-copy">
@@ -45,7 +45,7 @@
             </label>
             <details class="client-test-info">
               <summary aria-label="테스트 계정 안내">i</summary>
-              <div id="clientTestAccountHelp">클라이언트 검수용 임시 계정입니다. 역할을 선택하면 아래 아이디와 비밀번호가 자동 입력됩니다.</div>
+              <div id="clientTestAccountHelp">클라이언트 검수용 계정입니다. 서버에서 실제 계정과 PBX 내선 준비가 확인된 경우에만 아이디와 비밀번호를 자동 입력합니다.</div>
             </details>
           </div>
           <label>아이디<input name="username" autocomplete="username" placeholder="아이디 입력" required></label>
@@ -75,7 +75,7 @@
         <button data-view="counselor" class="role-counselor">상담 대기실</button>
         <button data-view="admin" class="role-admin">운영 관제</button>
       </nav>
-      <div class="header-user"><span class="build-version" aria-label="배포 버전">ONTALK v102</span><span id="headerRole" class="role-pill">-</span><strong id="headerUser">-</strong><button id="logoutButton" class="ghost">로그아웃</button></div>
+      <div class="header-user"><span class="build-version" aria-label="배포 버전">ONTALK v104</span><span id="headerRole" class="role-pill">-</span><strong id="headerUser">-</strong><button id="logoutButton" class="ghost">로그아웃</button></div>
     </header>
 
     <main>
@@ -126,13 +126,35 @@
         </div>
       </section>
 
-      <section id="adminViewerView" class="role-view hidden admin-wrap">
-        <div class="admin-top"><div><p id="adminViewerEyebrow" class="eyebrow">MEMBER VIEWER</p><h1 id="adminViewerTitle">회원 뷰어</h1></div><div class="admin-top-actions"><span id="adminViewerUpdated">-</span><button id="adminViewerRefresh" class="secondary" type="button">새로고침</button></div></div>
-        <nav class="admin-section-nav" aria-label="관리자 화면">
-          <button type="button" data-admin-page="operations">운영</button>
-          <button type="button" data-admin-page="counselor">상담사뷰어</button>
-          <button type="button" data-admin-page="member">회원뷰어</button>
+      <section id="adminView" class="role-view hidden admin-wrap">
+        <nav class="admin-section-nav" aria-label="관리자 화면 탭" role="tablist">
+          <button type="button" role="tab" aria-selected="true" data-admin-page="operations" class="active">운영</button>
+          <button type="button" role="tab" aria-selected="false" data-admin-page="counselor">상담사</button>
+          <button type="button" role="tab" aria-selected="false" data-admin-page="member">회원</button>
         </nav>
+
+        <div id="adminOperationsPanel" class="admin-tab-panel" role="tabpanel">
+          <div class="admin-top"><div><p class="eyebrow">REAL-TIME OPERATIONS</p><h1>온톡 운영 관제</h1></div><div class="admin-top-actions"><span id="adminUpdated">-</span><button id="openFreePbxOperations" class="secondary admin-pbx-button" type="button">FreePBX 열기 ↗</button><button id="adminRefresh" class="secondary" type="button">새로고침</button></div></div>
+        <div id="systemBanner" class="system-banner"><span class="pulse"></span><strong>시스템 상태 확인 중</strong><span>AMI 데이터를 불러오고 있습니다.</span></div>
+        <div class="metric-grid metric-grid-six">
+          <article><span>전체 회원</span><strong id="metricMembers">0</strong><small>가입 계정</small></article>
+          <article><span>상담사</span><strong id="metricCounselors">0</strong><small>가입 계정</small></article>
+          <article><span>현재 통화</span><strong id="metricActive">0</strong><small>연결 완료</small></article>
+          <article><span>대기·연결 중</span><strong id="metricWaiting">0</strong><small>호출 포함</small></article>
+          <article><span>상담 가능</span><strong id="metricAvailable">0</strong><small>웹 단말 등록</small></article>
+          <article><span>통화 중 상담사</span><strong id="metricOnCall">0</strong><small>실시간</small></article>
+        </div>
+        <div class="admin-grid admin-grid-lower">
+          <article class="admin-card span-two"><div class="card-head"><div><p class="eyebrow">LIVE CALLS</p><h2>현재 통화</h2></div><span id="callCountBadge" class="mini-badge">0건</span></div><div class="table-wrap"><table><thead><tr><th>상태</th><th>고객</th><th>상담사</th><th>연결 시간</th><th>경과</th><th></th></tr></thead><tbody id="liveCallsBody"></tbody></table><div id="liveCallsEmpty" class="empty-state">현재 진행 중인 통화가 없습니다.</div></div></article>
+          <article class="admin-card"><div class="card-head"><div><p class="eyebrow">SYSTEM</p><h2>서비스 상태</h2></div></div><div id="systemList" class="system-list"></div></article>
+          <article class="admin-card"><div class="card-head"><div><p class="eyebrow">COUNSELORS</p><h2>상담사 상태</h2></div></div><div id="adminAgentList" class="admin-agent-list"></div></article>
+          <article class="admin-card span-two"><div class="card-head"><div><p class="eyebrow">CALL HISTORY</p><h2>최근 종료 기록</h2></div><span class="page-size-label">10개씩 보기</span></div><div class="table-wrap"><table><thead><tr><th>종료 시각</th><th>채널</th><th>발신</th><th>연결 대상</th><th>종료 원인(코드 / 설명)</th></tr></thead><tbody id="historyBody"></tbody></table><div id="historyEmpty" class="empty-state">저장된 통화 기록이 없습니다.</div></div><div id="historyPagination" class="pagination-bar"><button id="historyPrev" class="pagination-button" type="button">이전</button><span id="historyPageInfo">1 / 1</span><button id="historyNext" class="pagination-button" type="button">다음</button></div></article>
+          <article class="admin-card span-two"><div class="card-head"><div><p class="eyebrow">EVENT STREAM</p><h2>최근 이벤트</h2></div><div class="card-head-tools"><span class="page-size-label">10개씩 보기</span><span class="live-label"><i></i>LIVE</span></div></div><div id="eventList" class="event-list"></div><div id="eventPagination" class="pagination-bar"><button id="eventPrev" class="pagination-button" type="button">이전</button><span id="eventPageInfo">1 / 1</span><button id="eventNext" class="pagination-button" type="button">다음</button></div></article>
+        </div>
+        </div>
+
+        <div id="adminViewerPanel" class="admin-tab-panel hidden" role="tabpanel">
+          <div class="admin-top"><div><p id="adminViewerEyebrow" class="eyebrow">MEMBER VIEWER</p><h1 id="adminViewerTitle">회원 뷰어</h1></div><div class="admin-top-actions"><span id="adminViewerUpdated">-</span><button id="adminViewerRefresh" class="secondary" type="button">새로고침</button></div></div>
         <article class="analytics-shell">
           <div class="analytics-toolbar analytics-toolbar-period-only">
             <div class="period-tabs" aria-label="분석 기간"><button data-period="7" class="active">7일</button><button data-period="30">30일</button><button data-period="90">90일</button></div>
@@ -163,30 +185,6 @@
             </section>
           </div>
         </article>
-      </section>
-
-      <section id="adminView" class="role-view hidden admin-wrap">
-        <div class="admin-top"><div><p class="eyebrow">REAL-TIME OPERATIONS</p><h1>온톡 운영 관제</h1></div><div class="admin-top-actions"><span id="adminUpdated">-</span><button id="openFreePbxOperations" class="secondary admin-pbx-button" type="button">FreePBX 열기 ↗</button><button id="adminRefresh" class="secondary" type="button">새로고침</button></div></div>
-        <nav class="admin-section-nav" aria-label="관리자 화면">
-          <button type="button" data-admin-page="operations" class="active">운영</button>
-          <button type="button" data-admin-page="counselor">상담사뷰어</button>
-          <button type="button" data-admin-page="member">회원뷰어</button>
-        </nav>
-        <div id="systemBanner" class="system-banner"><span class="pulse"></span><strong>시스템 상태 확인 중</strong><span>AMI 데이터를 불러오고 있습니다.</span></div>
-        <div class="metric-grid metric-grid-six">
-          <article><span>전체 회원</span><strong id="metricMembers">0</strong><small>가입 계정</small></article>
-          <article><span>상담사</span><strong id="metricCounselors">0</strong><small>가입 계정</small></article>
-          <article><span>현재 통화</span><strong id="metricActive">0</strong><small>연결 완료</small></article>
-          <article><span>대기·연결 중</span><strong id="metricWaiting">0</strong><small>호출 포함</small></article>
-          <article><span>상담 가능</span><strong id="metricAvailable">0</strong><small>웹 단말 등록</small></article>
-          <article><span>통화 중 상담사</span><strong id="metricOnCall">0</strong><small>실시간</small></article>
-        </div>
-        <div class="admin-grid admin-grid-lower">
-          <article class="admin-card span-two"><div class="card-head"><div><p class="eyebrow">LIVE CALLS</p><h2>현재 통화</h2></div><span id="callCountBadge" class="mini-badge">0건</span></div><div class="table-wrap"><table><thead><tr><th>상태</th><th>고객</th><th>상담사</th><th>연결 시간</th><th>경과</th><th></th></tr></thead><tbody id="liveCallsBody"></tbody></table><div id="liveCallsEmpty" class="empty-state">현재 진행 중인 통화가 없습니다.</div></div></article>
-          <article class="admin-card"><div class="card-head"><div><p class="eyebrow">SYSTEM</p><h2>서비스 상태</h2></div></div><div id="systemList" class="system-list"></div></article>
-          <article class="admin-card"><div class="card-head"><div><p class="eyebrow">COUNSELORS</p><h2>상담사 상태</h2></div></div><div id="adminAgentList" class="admin-agent-list"></div></article>
-          <article class="admin-card span-two"><div class="card-head"><div><p class="eyebrow">CALL HISTORY</p><h2>최근 종료 기록</h2></div><span class="page-size-label">10개씩 보기</span></div><div class="table-wrap"><table><thead><tr><th>종료 시각</th><th>채널</th><th>발신</th><th>연결 대상</th><th>종료 원인(코드 / 설명)</th></tr></thead><tbody id="historyBody"></tbody></table><div id="historyEmpty" class="empty-state">저장된 통화 기록이 없습니다.</div></div><div id="historyPagination" class="pagination-bar"><button id="historyPrev" class="pagination-button" type="button">이전</button><span id="historyPageInfo">1 / 1</span><button id="historyNext" class="pagination-button" type="button">다음</button></div></article>
-          <article class="admin-card span-two"><div class="card-head"><div><p class="eyebrow">EVENT STREAM</p><h2>최근 이벤트</h2></div><div class="card-head-tools"><span class="page-size-label">10개씩 보기</span><span class="live-label"><i></i>LIVE</span></div></div><div id="eventList" class="event-list"></div><div id="eventPagination" class="pagination-bar"><button id="eventPrev" class="pagination-button" type="button">이전</button><span id="eventPageInfo">1 / 1</span><button id="eventNext" class="pagination-button" type="button">다음</button></div></article>
         </div>
       </section>
     </main>
@@ -232,7 +230,7 @@
   </div>
   <div id="toast" class="toast" role="status"></div>
   <script defer src="https://jssip.net/download/releases/jssip-3.10.0.min.js"></script>
-  <script defer src="/config.js?v=102"></script>
-  <script defer src="/app.js?v=102"></script>
+  <script defer src="/config.js?v=104"></script>
+  <script defer src="/app.js?v=104"></script>
 </body>
 </html>
