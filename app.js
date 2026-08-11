@@ -188,6 +188,8 @@ var callTimer = null;
 var toastTimer = null;
 var audioContext = null;
 var ringTimer = null;
+var pendingIntentRingTimer = null;
+var pendingIntentAlertId = null;
 var callIntentPollTimer = null;
 var waitingIntent = null;
 var adminViewerRole = 'customer';
@@ -456,6 +458,7 @@ function showAuth() {
     eventSource = null;
     stopSnapshotPolling();
     stopCallIntentPolling();
+    stopPendingIntentAlert();
     waitingIntent = null;
     $('#authView').classList.remove('hidden');
     $('#appView').classList.add('hidden');
@@ -945,14 +948,90 @@ function renderPendingIntent(intent) {
         return;
     var visible = Boolean(intent && intent.status === 'pending' && !phone.session);
     card.classList.toggle('hidden', !visible);
-    if (!visible)
+    if (!visible) {
+        if (pendingIntentAlertId)
+            stopPendingIntentAlert();
         return;
+    }
     $('#pendingIntentCustomer').textContent = intent.customerUsername || "\uB0B4\uC120 ".concat(intent.customerExtension);
     $('#pendingIntentAvatar').textContent = String(intent.customerUsername || '고').slice(0, 1);
     var remaining = Math.max(0, Math.ceil((new Date(intent.expiresAt).getTime() - Date.now()) / 1000));
     $('#pendingIntentTimer').textContent = duration(remaining);
     $('#acceptIntentButton').dataset.intentId = intent.id;
     $('#rejectIntentButton').dataset.intentId = intent.id;
+    if (pendingIntentAlertId !== intent.id)
+        startPendingIntentAlert(intent);
+}
+function pendingIntentBeep() {
+    if (!audioContext)
+        return;
+    try {
+        var now_1 = audioContext.currentTime;
+        [0, 0.26].forEach(function (offset) {
+            var oscillator = audioContext.createOscillator();
+            var gain = audioContext.createGain();
+            oscillator.frequency.value = 880;
+            gain.gain.setValueAtTime(0.0001, now_1 + offset);
+            gain.gain.exponentialRampToValueAtTime(0.22, now_1 + offset + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now_1 + offset + 0.20);
+            oscillator.connect(gain).connect(audioContext.destination);
+            oscillator.start(now_1 + offset);
+            oscillator.stop(now_1 + offset + 0.22);
+        });
+    }
+    catch (error) { }
+}
+function showPendingIntentNotification(intent) {
+    if (!intent || !('Notification' in window) || Notification.permission !== 'granted' || document.visibilityState === 'visible' || !serviceWorkerRegistration)
+        return;
+    var name = intent.customerUsername || "\uB0B4\uC120 ".concat(intent.customerExtension);
+    var options = {
+        body: name + '\uB2D8\uC774 \uC0C1\uB2F4\uC744 \uC694\uCCAD\uD588\uC2B5\uB2C8\uB2E4.',
+        tag: 'ggul-call-' + intent.id,
+        requireInteraction: true, renotify: true, silent: false,
+        icon: '/icon-192.png?v=105', badge: '/icon-192.png?v=105',
+        vibrate: [500, 180, 500, 180, 900],
+        data: { intentId: intent.id, deviceToken: pushDeviceToken, url: '/?action=accept&intent=' + encodeURIComponent(intent.id) }
+    };
+    if (pushDeviceToken)
+        options.actions = [{ action: 'accept', title: '\uD1B5\uD654 \uBC1B\uAE30' }, { action: 'reject', title: '\uAC70\uC808' }];
+    serviceWorkerRegistration.showNotification('\uC628\uD1A1 \uC0C8 \uC0C1\uB2F4 \uC694\uCCAD', options).catch(function () { });
+}
+function startPendingIntentAlert(intent) {
+    stopPendingIntentAlert();
+    pendingIntentAlertId = intent.id;
+    activateAudio();
+    pendingIntentBeep();
+    pendingIntentRingTimer = setInterval(pendingIntentBeep, 1400);
+    try {
+        if (navigator.vibrate)
+            navigator.vibrate([500, 180, 500, 180, 900]);
+    }
+    catch (error) { }
+    var card = $('#pendingIntentCard');
+    if (card) {
+        card.classList.add('request-alerting');
+        try {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        catch (error) { }
+    }
+    showPendingIntentNotification(intent);
+    toast((intent.customerUsername || '\uACE0\uAC1D') + '\uB2D8\uC774 \uC0C1\uB2F4\uC744 \uC694\uCCAD\uD588\uC2B5\uB2C8\uB2E4.');
+}
+function stopPendingIntentAlert() {
+    if (pendingIntentRingTimer)
+        clearInterval(pendingIntentRingTimer);
+    pendingIntentRingTimer = null;
+    pendingIntentAlertId = null;
+    try {
+        if (navigator.vibrate)
+            navigator.vibrate(0);
+    }
+    catch (error) { }
+    var card = $('#pendingIntentCard');
+    if (card)
+        card.classList.remove('request-alerting');
 }
 function acceptPendingIntent(intentId) {
     return __awaiter(this, void 0, void 0, function () {
@@ -962,6 +1041,7 @@ function acceptPendingIntent(intentId) {
                 case 0:
                     if (!intentId)
                         return [2 /*return*/];
+                    stopPendingIntentAlert();
                     activateAudio();
                     $('#acceptIntentButton').disabled = true;
                     _a.label = 1;
@@ -974,7 +1054,7 @@ function acceptPendingIntent(intentId) {
                 case 3:
                     _a.sent();
                     acceptedActionIntentId = intentId;
-                    toast('상담 요청을 수락했습니다. 고객 통화를 연결합니다.');
+                    toast('\uC0C1\uB2F4 \uC694\uCCAD\uC744 \uC218\uB77D\uD588\uC2B5\uB2C8\uB2E4. \uACE0\uAC1D \uD1B5\uD654\uB97C \uC5F0\uACB0\uD569\uB2C8\uB2E4.');
                     return [4 /*yield*/, loadSnapshot()];
                 case 4:
                     _a.sent();
@@ -982,6 +1062,9 @@ function acceptPendingIntent(intentId) {
                 case 5:
                     error_12 = _a.sent();
                     toast(error_12.message);
+                    pendingIntentAlertId = null;
+                    if (snapshot)
+                        renderPendingIntent(ownPendingIntent(snapshot));
                     return [3 /*break*/, 7];
                 case 6:
                     $('#acceptIntentButton').disabled = false;
@@ -999,13 +1082,14 @@ function rejectPendingIntent(intentId) {
                 case 0:
                     if (!intentId)
                         return [2 /*return*/];
+                    stopPendingIntentAlert();
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 4, , 5]);
                     return [4 /*yield*/, api("/api/call-intents/".concat(encodeURIComponent(intentId), "/reject"), { method: 'POST', body: '{}' })];
                 case 2:
                     _a.sent();
-                    toast('상담 요청을 거절했습니다.');
+                    toast('\uC0C1\uB2F4 \uC694\uCCAD\uC744 \uAC70\uC808\uD588\uC2B5\uB2C8\uB2E4.');
                     return [4 /*yield*/, loadSnapshot()];
                 case 3:
                     _a.sent();
@@ -1348,7 +1432,7 @@ function registerServiceWorker() {
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 4, , 5]);
-                    return [4 /*yield*/, navigator.serviceWorker.register('/service-worker.js?v=105', { scope: '/' })];
+                    return [4 /*yield*/, navigator.serviceWorker.register('/service-worker.js?v=105-alert1', { scope: '/' })];
                 case 2:
                     serviceWorkerRegistration = _a.sent();
                     return [4 /*yield*/, navigator.serviceWorker.ready];

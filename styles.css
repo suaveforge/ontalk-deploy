@@ -89,3 +89,6 @@ input,select,textarea{font-size:16px}
 .phone-notice.device-fallback{background:#eef3ff;color:#274a78;border:1px solid #cfddf4}
 .client-test-login select:disabled{opacity:.7;cursor:progress}
 @media(max-width:760px){.phone-notice{padding:14px 15px}.phone-notice strong{font-size:16px}.phone-notice span{font-size:14px}}
+
+.pending-request-card.request-alerting{outline:3px solid currentColor;animation:ggul-request-alert .8s ease-in-out infinite alternate}
+@keyframes ggul-request-alert{from{transform:scale(1)}to{transform:scale(1.012)}}
