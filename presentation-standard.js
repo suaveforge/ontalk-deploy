@@ -1,0 +1,16 @@
+(() => {
+  const tag = document.currentScript;
+  const projectName = tag?.dataset.project || document.title || location.hostname;
+  const caseSlug = tag?.dataset.caseStudy || '';
+  const caseStudyUrl = caseSlug ? `https://suaveforge.com/work/${caseSlug}/` : 'https://suaveforge.com/work/';
+  const canonicalUrl = `${location.origin}${location.pathname}`;
+  const meta = (name, content) => { let e = document.head.querySelector(`meta[name="${name}"]`); if (!e) { e = document.createElement('meta'); e.name = name; document.head.appendChild(e); } e.content = content; };
+  meta('robots', 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1');
+  meta('author', 'SuaveForge');
+  if (!document.title.includes('SuaveForge')) document.title = `${document.title} | SuaveForge 프로젝트`;
+  const d = document.head.querySelector('meta[name="description"]'); if (d && !d.content.includes('SuaveForge')) d.content = `${d.content} SuaveForge 제작 프로젝트.`;
+  let c = document.head.querySelector('link[rel="canonical"]'); if (!c) { c = document.createElement('link'); c.rel = 'canonical'; document.head.appendChild(c); } c.href = canonicalUrl;
+  const schema = document.createElement('script'); schema.type='application/ld+json'; schema.dataset.suaveforgeBrand='true'; schema.textContent=JSON.stringify({'@context':'https://schema.org','@type':'WebApplication',name:projectName,url:canonicalUrl,creator:{'@type':'Organization',name:'SuaveForge',url:'https://suaveforge.com/'},isPartOf:{'@type':'CreativeWork',url:caseStudyUrl}}); document.head.appendChild(schema);
+  const mount=()=>{ if(document.querySelector('[data-suaveforge-brand="signature"]'))return; const a=document.createElement('a'); a.dataset.suaveforgeBrand='signature';a.href=caseStudyUrl;a.target='_blank';a.rel='noopener';a.setAttribute('aria-label','SuaveForge 프로젝트 케이스 스터디');a.style.cssText='display:inline-flex;align-items:center;gap:8px;color:inherit;text-decoration:none;font:inherit;line-height:1;white-space:nowrap;opacity:.78'; const sh=document.createElement('span');sh.style.cssText='display:inline-flex;width:26px;height:26px;align-items:center;justify-content:center;border-radius:7px;background:#0b0c0f;box-shadow:inset 0 0 0 1px rgba(127,127,127,.18);overflow:hidden;flex:0 0 auto';const img=document.createElement('img');img.src='https://suaveforge.com/assets/logo-motion/suaveforge-logo-final.svg?v=20260828-34';img.alt='';img.width=22;img.height=22;img.style.cssText='display:block;width:22px;height:22px';sh.appendChild(img);const w=document.createElement('strong');w.textContent='SuaveForge';w.style.cssText='font-size:13px;font-weight:850;letter-spacing:-.03em;color:inherit';a.append(sh,w);const footer=document.querySelector('footer');if(footer){const h=document.createElement('span');h.dataset.suaveforgeBrand='true';h.style.cssText='display:inline-flex;align-items:center;margin-left:auto;padding-left:14px';h.appendChild(a);footer.appendChild(h)}else{const h=document.createElement('div');h.dataset.suaveforgeBrand='true';h.style.cssText='display:flex;justify-content:center;align-items:center;width:100%;box-sizing:border-box;padding:14px 18px 18px;color:inherit;background:transparent';h.appendChild(a);document.body.appendChild(h)}};
+  document.readyState==='loading'?document.addEventListener('DOMContentLoaded',mount,{once:true}):mount();
+})();
