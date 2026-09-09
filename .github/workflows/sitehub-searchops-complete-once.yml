@@ -1,0 +1,24 @@
+name: SiteHub SearchOps complete p05 once
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/sitehub-searchops-complete-once.yml']
+permissions: {contents: write}
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply complete SiteHub contract
+        env:
+          PROJECT_ID: p05
+          PUBLIC_URL: https://ontalk.suaveforge.com/
+          PROJECT_NAME: ONTALK
+          DESCRIPTION: 온톡은 상담사를 선택하고 웹에서 바로 음성 상담을 연결하며 상담사와 운영자가 상태를 관리하는 온라인 상담 서비스입니다.
+        run: |
+          set -Eeuo pipefail
+          curl -fsSL https://raw.githubusercontent.com/suaveforge/sitehub-deploy/8289fa3e45143954bda73514ad6fd3667d90891d/searchops/static-complete-adapter.py -o /tmp/sitehub.py
+          python /tmp/sitehub.py
+          git config user.name 'SuaveForge SiteHub'; git config user.email '53187583+programmer119@users.noreply.github.com'
+          git add index.html sitemap.xml robots.txt
+          if ! git diff --cached --quiet; then git commit -m 'Apply SiteHub SearchOps p05'; git push; fi
