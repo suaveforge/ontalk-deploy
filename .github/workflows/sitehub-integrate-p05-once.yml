@@ -1,0 +1,40 @@
+name: SiteHub integrate p05 once
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/sitehub-integrate-p05-once.yml']
+permissions: {contents: write}
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch deployed initial HTML safely
+        shell: python
+        env: {SITEHUB_PROJECT: p05, PUBLIC_URL: 'https://ontalk.suaveforge.com/', FALLBACK_DESCRIPTION: '온톡 웹 상담 연결 서비스.'}
+        run: |
+          from pathlib import Path
+          import os,re,html
+          p=Path('index.html'); s=p.read_text(encoding='utf-8'); pid=os.environ['SITEHUB_PROJECT']; url=os.environ['PUBLIC_URL']; fallback=os.environ['FALLBACK_DESCRIPTION']
+          title_m=re.search(r'<title[^>]*>(.*?)</title>',s,re.I|re.S); title=html.unescape(re.sub(r'<[^>]+>','',title_m.group(1)).strip()) if title_m else pid
+          desc_m=re.search(r'<meta\b(?=[^>]*\bname=["\']description["\'])[^>]*\bcontent=["\']([^"\']*)["\'][^>]*>',s,re.I); desc=html.unescape(desc_m.group(1)).strip() if desc_m else fallback
+          e=lambda x:html.escape(x,quote=True); tags=[]
+          if not desc_m: tags.append(f'<meta name="description" content="{e(desc)}">')
+          if not re.search(r'<link\b(?=[^>]*\brel=["\'][^"\']*canonical)',s,re.I): tags.append(f'<link rel="canonical" href="{e(url)}">')
+          for prop,val in [('og:title',title),('og:description',desc),('og:image','https://sitehub.suaveforge.com/assets/namecard-default.png'),('og:url',url),('og:site_name','SuaveForge')]:
+            if not re.search(r'<meta\b(?=[^>]*\bproperty=["\']'+re.escape(prop)+r'["\'])',s,re.I): tags.append(f'<meta property="{prop}" content="{e(val)}">')
+          if not re.search(r'<meta\b(?=[^>]*\bname=["\']twitter:card["\'])',s,re.I): tags.append('<meta name="twitter:card" content="summary_large_image">')
+          if f'data-sitehub-project="{pid}"' not in s: tags.append(f'<script async src="https://sitehub.suaveforge.com/analytics-loader.js" data-sitehub-project="{pid}"></script>')
+          if tags:
+            block='\n  <!-- SITEHUB-BEGIN -->\n  '+'\n  '.join(tags)+'\n  <!-- SITEHUB-END -->\n'
+            s,n=re.subn(r'</head\s*>',block+'</head>',s,count=1,flags=re.I); assert n==1; p.write_text(s,encoding='utf-8')
+      - name: Validate and commit
+        run: |
+          set -Eeuo pipefail
+          grep -q 'data-sitehub-project="p05"' index.html
+          grep -q 'property="og:image"' index.html
+          git config user.name 'SuaveForge SiteHub'
+          git config user.email '53187583+programmer119@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Integrate SiteHub p05'
+          git push
