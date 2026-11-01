@@ -1117,7 +1117,7 @@ function renderAdmin(data) {
     renderSystemBanner(data);
     renderAdminCalls(data.calls || []);
     renderSystem(data);
-    renderAdminAgents((data.agents || []).filter(function (agent) { return agent.role === 'counselor'; }));
+    renderAdminAgents((data.agents || []).filter(function (agent) { return agent.role === 'counselor' || agent.role === 'journal_receiver'; }));
     renderHistory(data.callHistory || []);
     renderEvents(data.recentEvents || []);
     renderPeopleViewer(data);
@@ -1169,7 +1169,12 @@ function renderSystem(data) {
     }).join('') + "<div class=\"system-item\"><span>Asterisk \uAC00\uB3D9\uC2DC\uAC04</span><b>".concat(formatUptime(data.system.uptime), "</b></div>");
 }
 function renderAdminAgents(agents) {
-    $('#adminAgentList').innerHTML = agents.length ? agents.map(function (agent) { return "<button class=\"admin-agent\" data-open-counselor=\"".concat(escapeHtml(agent.memberId || agent.id), "\"><div><strong>").concat(escapeHtml(agent.name), "</strong><span>\uB0B4\uC120 ").concat(agent.id, "</span></div><b class=\"status-chip ").concat(agent.status, "\">").concat(statusLabels[agent.status] || agent.status, "</b></button>"); }).join('') : '<div class="empty-state">가입한 상담사가 없습니다.</div>';
+    $('#adminAgentList').innerHTML = agents.length ? agents.map(function (agent) {
+        if (agent.role === 'journal_receiver') {
+            return '<div class="admin-agent"><div><strong>'+escapeHtml(agent.name)+'</strong><span>기쁜사이 내선 '+escapeHtml(agent.id)+' · '+(agent.registered ? 'SIP 연결 중' : 'SIP 미연결')+'</span></div><b class="status-chip '+agent.status+'">'+(agent.registered ? 'SIP 수신 가능' : 'SIP 미접속')+'</b></div>';
+        }
+        return "<button class=\"admin-agent\" data-open-counselor=\"".concat(escapeHtml(agent.memberId || agent.id), "\"><div><strong>").concat(escapeHtml(agent.name), "</strong><span>내선 ").concat(agent.id, "</span></div><b class=\"status-chip ").concat(agent.status, "\">").concat(statusLabels[agent.status] || agent.status, "</b></button>");
+    }).join('') : '<div class="empty-state">등록된 수신 단말이 없습니다.</div>';
     $$('[data-open-counselor]').forEach(function (button) { return button.addEventListener('click', function () {
         adminViewerRole = 'counselor';
         selectedPersonId = button.dataset.openCounselor;
