@@ -1171,7 +1171,7 @@ function renderSystem(data) {
 function renderAdminAgents(agents) {
     $('#adminAgentList').innerHTML = agents.length ? agents.map(function (agent) {
         if (agent.role === 'journal_receiver') {
-            return '<div class="admin-agent"><div><strong>'+escapeHtml(agent.name)+'</strong><span>기쁜사이 내선 '+escapeHtml(agent.id)+' · '+(agent.registered ? 'SIP 연결 중' : 'SIP 미연결')+'</span></div><b class="status-chip '+agent.status+'">'+(agent.registered ? 'SIP 수신 가능' : 'SIP 미접속')+'</b></div>';
+            return '<div class="admin-agent"><div><strong>'+escapeHtml(agent.name)+'</strong><span>기쁜사이 내선 '+escapeHtml(agent.id)+' · '+(agent.registered ? 'SIP 연결 중' : agent.pushReady ? '잠금화면 알림 준비' : '수신 미준비')+'</span></div><b class="status-chip '+agent.status+'">'+(agent.registered ? 'SIP 수신 가능' : agent.pushReady ? '잠금화면 수신 준비' : '수신 미준비')+'</b></div>';
         }
         return "<button class=\"admin-agent\" data-open-counselor=\"".concat(escapeHtml(agent.memberId || agent.id), "\"><div><strong>").concat(escapeHtml(agent.name), "</strong><span>내선 ").concat(agent.id, "</span></div><b class=\"status-chip ").concat(agent.status, "\">").concat(statusLabels[agent.status] || agent.status, "</b></button>");
     }).join('') : '<div class="empty-state">등록된 수신 단말이 없습니다.</div>';
